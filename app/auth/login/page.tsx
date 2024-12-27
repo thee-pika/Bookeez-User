@@ -1,6 +1,7 @@
 'use client';
 
 import Link from "next/link";
+import dotenv from 'dotenv';
 import { useState } from "react";
 import { useRouter } from 'next/navigation';
 import { toast, ToastContainer } from 'react-toastify';
@@ -8,6 +9,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 const Login = () => {
   const router = useRouter();
+  dotenv.config();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   
@@ -16,7 +18,7 @@ const Login = () => {
     const loginData = { email, password };
 
     try {
-      const response = await fetch('http://localhost:5000/auth/login', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URI}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -36,8 +38,7 @@ const Login = () => {
         router.push("/"); 
       } else {
         toast.error("Failed to login!");
-        console.log("Error Login", data);
-        console.log("loginData", loginData);
+
       }
     } catch (error) {
       console.log("Error Login", error);

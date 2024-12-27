@@ -1,10 +1,12 @@
 "use client"
 import { useState } from 'react'
+import dotenv from 'dotenv';
 import { useRouter } from 'next/navigation'
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const Verify = () => {
+    dotenv.config();
     const [method, setmethod] = useState("")
     const [email, setemail] = useState("")
     const [number, setNumber] = useState("")
@@ -14,9 +16,6 @@ const Verify = () => {
         let contact;
         if (method === "email") {
             contact = email;
-console.log("cliled");
-            console.log("contact:", contact);
-            console.log("method:", method);
 
         } else {
             if (number.startsWith("+")) {
@@ -27,7 +26,7 @@ console.log("cliled");
                 contact = `+91${number}`;
             }
         }
-        const response = await fetch("http://localhost:5000/verify/send-otp", {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URI}/verify/send-otp`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ method, contact })

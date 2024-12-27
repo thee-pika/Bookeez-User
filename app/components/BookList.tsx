@@ -1,4 +1,6 @@
+"use client"
 import { useState, useEffect } from "react";
+import dotenv from 'dotenv';
 import Image from "next/image";
 import Link from "next/link";
 import Loader from "./Loader";
@@ -7,16 +9,16 @@ interface Template {
   template_name: string,
   _id: string,
   defaultValues: {
-      title: string,
-      author: string,
-      price: number,
-      isbn: string,
-      subject: string,
-      stream: string,
-      description: string,
-      semester: string,
-      condition: string,
-      imageUrl: string,
+    title: string,
+    author: string,
+    price: number,
+    isbn: string,
+    subject: string,
+    stream: string,
+    description: string,
+    semester: string,
+    condition: string,
+    imageUrl: string,
   }
 }
 interface ResponseData {
@@ -39,6 +41,7 @@ interface BookListProps {
 }
 
 const BookList = ({ filters, searchQuery }: BookListProps) => {
+  dotenv.config();
   const [books, setBooks] = useState<Template[]>([]);
   const [loading, setloading] = useState<boolean>(true)
   const [currentPage, setcurrentPage] = useState(1)
@@ -47,7 +50,7 @@ const BookList = ({ filters, searchQuery }: BookListProps) => {
   const fetchBooks = async (page: number) => {
     try {
 
-      const response = await fetch(`http://localhost:5000/api/template?page=${page}&limit=4`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URI}/api/template?page=${page}&limit=4`);
       const data: ResponseData = await response.json();
 
       setBooks(data.template);
@@ -70,13 +73,13 @@ const BookList = ({ filters, searchQuery }: BookListProps) => {
   }
 
   const handlePrevious = () => {
-    if(currentPage > 1) {
-      setcurrentPage(currentPage-1)
+    if (currentPage > 1) {
+      setcurrentPage(currentPage - 1)
     }
   }
   const handleNext = () => {
-    if(currentPage < totalPages) {
-      setcurrentPage(currentPage+1)
+    if (currentPage < totalPages) {
+      setcurrentPage(currentPage + 1)
     }
   }
   const filteredBooks = (books || []).filter((book) => {
@@ -109,57 +112,59 @@ const BookList = ({ filters, searchQuery }: BookListProps) => {
 
   return (
     <div className="container ml-auto px-4 py-8 max-w-[79vw] max-h-[70vh] overflow-y-auto">
-    {/* Responsive Grid for Images */}
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-      {filteredBooks.length > 0 ? (
-        filteredBooks.map((book) => (
-          <Link href={`/book/${book._id}`} key={book._id} className="group">
-            {/* Centered Image Container */}
-            <div className="relative w-full h-64 flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden group-hover:scale-105 transition-transform duration-300">
-              {book.defaultValues.imageUrl ? (
-                <Image
-                  src={book.defaultValues.imageUrl}
-                  alt={book.defaultValues.title}
-                  layout="fill"
-                  priority
-                  style={{ objectFit: "cover" }}
-                  className="rounded-lg"
-                />
-              ) : (
-                <div className="flex justify-center items-center w-full h-full bg-gray-200">
-                  <span className="text-gray-500">No Image</span>
-                </div>
-              )}
-            </div>
-          </Link>
-        ))
-      ) : (
-        <p>No books available.</p>
-      )}
+      {/* Responsive Grid for Images */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-12">
+        {filteredBooks.length > 0 ? (
+          filteredBooks.map((book) => (
+            <Link href={`/book/${book._id}`} key={book._id} className="group">
+              {/* Centered Image Container */}
+              <div className="relative w-full h-64 flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden group-hover:scale-105 transition-transform duration-300">
+                {book.defaultValues.imageUrl ? (
+                  <Image
+                    src={book.defaultValues.imageUrl}
+                    alt={book.defaultValues.title}
+                    fill
+                    priority
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    style={{ objectFit: "cover" }}
+                    className="rounded-lg"
+                  />
+                ) : (
+                  <div className="flex justify-center items-center w-full h-full bg-gray-200">
+                    <span className="text-gray-500">No Image</span>
+                  </div>
+                )}
+              </div>
+            </Link>
+          ))
+          
+        ) : (
+          <p>No books available.</p>
+        )}
+      </div>
+
+      {/* Pagination Controls */}
+      <div className="pagination flex justify-end items-center mt-8">
+        <button
+          className="bg-[#366977] hover:bg-[#153943] text-white py-2 px-6 rounded-md disabled:opacity-50"
+          onClick={handlePrevious}
+          disabled={currentPage === 1}
+        >
+          Previous
+        </button>
+        <span className="text-gray-700 mr-4 ml-4 ">
+          Page {currentPage} of {totalPages}
+        </span>
+        <button
+          className="bg-[#366977] hover:bg-[#153943] text-white py-2 px-6 rounded-md disabled:opacity-50"
+          onClick={handleNext}
+          disabled={currentPage === totalPages}
+        >
+          Next
+        </button>
+      </div>
     </div>
-  
-    {/* Pagination Controls */}
-    <div className="pagination flex justify-end items-center mt-8">
-      <button
-        className="bg-[#366977] hover:bg-[#153943] text-white py-2 px-6 rounded-md disabled:opacity-50"
-        onClick={handlePrevious}
-        disabled={currentPage === 1}
-      >
-        Previous
-      </button>
-      <span className="text-gray-700 r-4 ml-4 ">
-        Page {currentPage} of {totalPages}
-      </span>
-      <button
-        className="bg-[#366977] hover:bg-[#153943] text-white py-2 px-6 rounded-md disabled:opacity-50"
-        onClick={handleNext}
-        disabled={currentPage === totalPages}
-      >
-        Next
-      </button>
-    </div>
-  </div>
-  
+
   );
 };
 

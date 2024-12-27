@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import dotenv from 'dotenv';
 
 interface Notification {
     _id: string;
@@ -12,6 +13,7 @@ interface Notification {
 }
 
 const NotificationComponent = () => {
+    dotenv.config();
     const [notifications, setNotifications] = useState<Notification[]>([]);
 
     const handleDeleteCartItem = async (notifyId: string) => {
@@ -21,7 +23,7 @@ const NotificationComponent = () => {
                 const user = JSON.parse(userDetails);
                 const userId = user._id;
 
-                const res = await fetch(`http://localhost:5000/notification/?notifyId=${notifyId}&userId=${userId}`, {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URI}/notification/?notifyId=${notifyId}&userId=${userId}`, {
                     method: "DELETE",
                 });
 
@@ -30,7 +32,7 @@ const NotificationComponent = () => {
                     setNotifications((prev) =>
                         prev.filter((notification) => notification._id !== notifyId)
                     );
-                    
+
                     toast.success("Notification Deleted Successfully!!");
                 } else {
                     console.error("Failed to delete notification:", res.statusText);
@@ -49,7 +51,7 @@ const NotificationComponent = () => {
 
                 if (user) {
                     const userId = user._id;
-                    const res = await fetch(`http://localhost:5000/notification/?userId=${userId}`);
+                    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URI}/notification/?userId=${userId}`);
                     if (res.ok) {
                         const data = await res.json();
                         const sortedNotifications = data.notifications.sort(

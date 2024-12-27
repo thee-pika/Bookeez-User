@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import dotenv from 'dotenv';
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -35,6 +36,7 @@ interface Review {
 
 const BookDetails = () => {
     const { id } = useParams();
+    dotenv.config();
     const router = useRouter();
     const [rating, setRating] = useState(0);
     const [comment, setcomment] = useState<string>("");
@@ -56,7 +58,7 @@ const BookDetails = () => {
 
     const fetchTemplate = async () => {
         try {
-            const res = await fetch(`http://localhost:5000/api/template/${id}`);
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URI}/api/template/${id}`);
             if (!res.ok) {
                 console.log("Error fetching template");
             }
@@ -73,7 +75,7 @@ const BookDetails = () => {
 
     const fetchReviews = async () => {
         try {
-            const res = await fetch(`http://localhost:5000/api/template/${id}/review`);
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URI}/api/template/${id}/review`);
             if (!res.ok) {
                 toast.success("Reviews couldn't be fetched successfully");
             }
@@ -90,7 +92,7 @@ const BookDetails = () => {
 
     const handleDelete = async () => {
         try {
-            const res = await fetch(`http://localhost:5000/api/template/${id}`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URI}/api/template/${id}`, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json"
@@ -125,7 +127,7 @@ const BookDetails = () => {
 
                 }
                 const userId = user._id;
-                const res = await fetch("http://localhost:5000/api/user/cart", {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URI}/api/user/cart`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
@@ -149,7 +151,7 @@ const BookDetails = () => {
     const handleReviewSubmit: React.ChangeEventHandler<HTMLFormElement> = async (e) => {
         e.preventDefault();
         try {
-            const res = await fetch(`http://localhost:5000/api/template/${id}/review`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URI}/api/template/${id}/review`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"

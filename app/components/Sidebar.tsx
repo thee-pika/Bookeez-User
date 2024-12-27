@@ -54,7 +54,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onFilterChange }) => {
 
     return (
         <div className="relative">
-            {/* Hamburger Menu - Only visible on small screens */}
+           
             <div className="lg:hidden p-4">
                 <button onClick={toggleModal} className="text-2xl text-gray-700">
                     <FaBars />
@@ -62,8 +62,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onFilterChange }) => {
             </div>
 
             {/* Sidebar for medium and larger screens */}
-            <div className="hidden lg:block fixed top-0 left-0 w-[20vw] h-full bg-white z-50 overflow-y-auto">
-                <div className="relative w-full h-full p-6 mt-16">
+            <div className="hidden lg:block fixed top-0 left-0 w-[20vw] h-[86.5vh] bg-white z-50 overflow-y-auto">
+                <div className="relative w-full p-6 mt-16">
                     <h2 className="font-bold font-mono text-2xl pl-2">Top Categories</h2>
 
                     {/* Stream Filter */}

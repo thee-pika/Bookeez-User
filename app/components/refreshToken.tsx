@@ -1,4 +1,7 @@
+import dotenv from 'dotenv';
+
 const refreshAccessToken = async () => {
+    dotenv.config();
   const refreshToken = localStorage.getItem("refreshToken");
 
   if (!refreshToken) {
@@ -7,7 +10,7 @@ const refreshAccessToken = async () => {
   }
 
   try {
-    const response = await fetch("http://localhost:5000/auth/refresh", {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URI}/auth/refresh`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

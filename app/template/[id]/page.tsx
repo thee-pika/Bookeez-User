@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import Dropdown from ".././../components/Dropdown"
 import { MdUpload } from 'react-icons/md';
+import dotenv from 'dotenv';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useParams } from "next/navigation";
@@ -25,6 +26,7 @@ interface Template {
 }
 
 const NewBook = () => {
+    dotenv.config();
     const [template, setTemplate] = useState<Template | undefined>()
     const [loading, setLoading] = useState(true)
     const { id } = useParams()
@@ -74,7 +76,7 @@ const NewBook = () => {
 
     const fetchTemplate = async () => {
         try {
-            const res = await fetch(`http://localhost:5000/api/template/${id}`)
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URI}/api/template/${id}`)
             if (!res.ok) {
                 console.log("eeror");
             }
@@ -126,7 +128,7 @@ const NewBook = () => {
 
         try {
             console.log(defaultValues)
-            const res = await fetch(`http://localhost:5000/api/template/${id}/addBook`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URI}/api/template/${id}/addBook`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"

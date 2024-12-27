@@ -1,6 +1,8 @@
 "use client"
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
+import dotenv from 'dotenv';
+
 interface cartItem {
   template: {
     defaultValues: {
@@ -17,6 +19,8 @@ interface cartItem {
   quantity: number
 }
 const CartItems = () => {
+   dotenv.config();
+   const [loading, setloading] = useState(true)
   const [cartItems, setcartItems] = useState<cartItem[]>([])
 
   useEffect(() => {
@@ -24,25 +28,35 @@ const CartItems = () => {
   }, [])
 
   const fetchCartItems = async () => {
-    const userDetails = localStorage.getItem("user");
-    if (userDetails != null) {
-      const user = JSON.parse(userDetails);
-
-      if (user) {
-        const userId = user._id
-
-        const res = await fetch(`http://localhost:5000/api/user/cart?userId=${userId}`)
-        if (res.ok) {
-          const data = await res.json();
-          console.log("data.cart", data.cart)
-          const sortedCartItems = data.cart.sort((a: cartItem, b: cartItem) => new Date(b.addedAt).getTime() - new Date(a.addedAt).getTime());
-          console.log("sortedCartItems", sortedCartItems)
-
-          setcartItems(sortedCartItems);
-          console.log("cartItems", cartItems)
+    try {
+      const userDetails = localStorage.getItem("user");
+      if (userDetails != null) {
+        const user = JSON.parse(userDetails);
+  
+        if (user) {
+          const userId = user._id
+  
+          const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URI}/api/user/cart?userId=${userId}`)
+          if (res.ok) {
+            const data = await res.json();
+         
+            const sortedCartItems = data.cart.sort((a: cartItem, b: cartItem) => new Date(b.addedAt).getTime() - new Date(a.addedAt).getTime());
+            console.log("sortedCartItems", sortedCartItems)
+  
+            setcartItems(sortedCartItems);
+            console.log("cartItems", cartItems)
+          }
         }
       }
+    } catch (error) {
+      console.log("error",error );
+      
+    } finally {
+      setloading(false)
     }
+  }
+  if(loading) {
+    return <div className="h-screen">Loading ....</div>
   }
   const handleDeleteCartItem = async (itemId: string) => {
     const userDetails = localStorage.getItem("user");
@@ -52,7 +66,7 @@ const CartItems = () => {
         const userId = user._id;
         
         // API call to delete the cart item
-        const res = await fetch(`http://localhost:5000/api/user/cart?userId=${userId}&itemId=${itemId}`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URI}/api/user/cart?userId=${userId}&itemId=${itemId}`, {
           method: 'DELETE',
         });
 
