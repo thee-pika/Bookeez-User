@@ -27,7 +27,7 @@ interface Template {
 
 const NewBook = () => {
     dotenv.config();
-    const [template, setTemplate] = useState<Template | undefined>()
+    const [, setTemplate] = useState<Template | undefined>()
     const [loading, setLoading] = useState(true)
     const { id } = useParams()
 

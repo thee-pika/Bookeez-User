@@ -28,7 +28,7 @@ interface Template {
 const EditTemplate = () => {
     dotenv.config();
     const router = useRouter();
-    const [template, setTemplate] = useState<Template | undefined>()
+    const [, setTemplate] = useState<Template | undefined>()
     const [loading, setLoading] = useState(true)
     const { id } = useParams()
 
