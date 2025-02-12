@@ -15,9 +15,12 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Get Firebase Messaging instance
-const messaging = getMessaging(app);
+let messaging: ReturnType<typeof getMessaging> | null = null;
 
+if(typeof window !== "undefined") {
+  messaging = getMessaging(app);
+}
+ 
 interface FcmTokenState {
   fcmToken: string | null;
 }
@@ -26,6 +29,12 @@ const useFCMToken = () => {
   const [fcmToken, setFcmToken] = useState<FcmTokenState>({ fcmToken: null });
 
   useEffect(() => {
+
+    if(!messaging) {
+      console.warn("Firebase Messaging is not initialized (server-side)");
+      return;
+    }
+    
     const getTokenAndSend = async () => {
       try {
         const permission = await Notification.requestPermission();
