@@ -3,6 +3,7 @@ import { useState, useEffect } from "react"
 import dotenv from 'dotenv';
 import Image from "next/image"
 import Link from "next/link"
+dotenv.config();
 
 interface Template {
   template_name: string,
@@ -22,7 +23,7 @@ interface Template {
 }
 
 const Sell = () => {
-      dotenv.config();
+  console.log("im innn sell pageeee");
   const [templates, settemplates] = useState<Template[]>([])
   const [loading, setloading] = useState(true)
 
@@ -54,6 +55,7 @@ const Sell = () => {
 
         <div className="templates grid lg:grid-cols-4 md:grid-cols-3 grid-cols-1 gap-6 p-4 pl-12 ">
           {
+            templates ?
             templates.map((template: Template, index) => (
               <Link href={`/template/${template._id}`} key={template._id}>
                 <div key={index} className="flex flex-col justify-evenly rounded-md w-[300px] h-[70vh] items-center bg-[rgb(185,185,185)] shadow-[#686666] shadow-md hover:shadow-xl transition-shadow overflow-hidden">
@@ -85,7 +87,9 @@ const Sell = () => {
 
               </Link>
             )
-            )}
+            )
+          : <h1>No templates founddd</h1> 
+          }
         </div>
       </div>
     </>

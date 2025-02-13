@@ -1,18 +1,26 @@
 "use client"
-import { useSearchParams } from 'next/navigation';
-import { useState } from 'react'
-import { useRouter } from 'next/navigation';
+import {  useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react'
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-
 const VerifyCode = () => {
   const router = useRouter();
-
+  const [method, setMethod] = useState("");
+  const [contact, setContact] = useState("");
   const [code, setCode] = useState("");
-  const searchParams = useSearchParams();
-  const method = searchParams.get("method");
-  const contact = searchParams.get("contact");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      setMethod(params.get("method") || "");
+      setContact(params.get("contact") || "");
+    }
+  }, []);
+
+  // const searchParams = useSearchParams();
+  // const method = searchParams.get("method");
+  // const contact = searchParams.get("contact");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCode(e.target.value)

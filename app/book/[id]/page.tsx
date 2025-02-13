@@ -8,7 +8,8 @@ import { useRouter } from "next/navigation";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Link from "next/link";
-import StarRatingComponent from "react-star-rating-component";
+import { Rating } from 'react-simple-star-rating'
+// import StarRatingComponent from "react-star-rating-component";
 import "../../styles/globals.css"
 
 interface Template {
@@ -43,6 +44,15 @@ const BookDetails = () => {
     const [reviews, setReviews] = useState<Review[]>([]);
     const [template, setTemplate] = useState<Template | undefined>();
     const [userRole, setUserRole] = useState<string | null>(null);
+
+    const handleRating = (rate: number) => {
+        setRating(rate)
+    }
+
+    // const handleReset = () => {
+    //     // Set the initial value
+    //     setRating(0)
+    // }
 
     useEffect(() => {
         const userDetails = localStorage.getItem("user");
@@ -86,9 +96,9 @@ const BookDetails = () => {
         }
     };
 
-    const handleStarClick = (nextValue: number) => {
-        setRating((prevRating) => prevRating === nextValue ? prevRating > 0 ? prevRating - 1 : prevRating : nextValue);
-    };
+    // const handleStarClick = (nextValue: number) => {
+    //     setRating((prevRating) => prevRating === nextValue ? prevRating > 0 ? prevRating - 1 : prevRating : nextValue);
+    // };
 
     const handleDelete = async () => {
         try {
@@ -248,7 +258,7 @@ const BookDetails = () => {
                     <h1 className="font-bold text-lg hover:underline mb-4">Write a Review ...</h1>
                     <form onSubmit={handleReviewSubmit} className="w-full">
                         <div className="custom-star-rating rating text-2xl ml-4" style={{ fontSize: "2rem" }}>
-                            <StarRatingComponent
+                            {/* <StarRatingComponent
                                 name="rate1"
                                 starColor="#FFD700"
                                 starCount={5}
@@ -256,7 +266,9 @@ const BookDetails = () => {
                                 onStarClick={handleStarClick}
                                 emptyStarColor="#d3d3d3"
                                 editing={true}
-                            />
+                            /> */}
+
+                            <Rating onClick={handleRating} initialValue={rating} />
                         </div>
                         <div className="comment">
                             <textarea
@@ -285,14 +297,16 @@ const BookDetails = () => {
                         reviews.map((review) => (
                             <div key={review.userId} className="review-item border mb-4 rounded-md border-black p-4">
                                 <div className="flex items-center text-xl">
-                                    <StarRatingComponent
+                                    {/* <StarRatingComponent
                                         name={`rating-${review.userId}`}
                                         starColor="#FFD700"
                                         starCount={5}
                                         value={review.rating}
                                         editing={false}
                                         emptyStarColor="#d3d3d3"
-                                    />
+                                    /> */}
+
+                                    <Rating onClick={handleRating} initialValue={rating} />
                                 </div>
                                 <p>{review.comment}</p>
                             </div>
