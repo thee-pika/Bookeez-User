@@ -269,7 +269,7 @@ const BookDetails = () => {
                 });
 
                 if (res.ok) {
-                    console.log("res,", res);
+                  
                     toast.success("Review added successfully!");
 
                     setTimeout(() => {
