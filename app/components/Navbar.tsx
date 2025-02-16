@@ -7,12 +7,12 @@ import { useRouter } from 'next/navigation';
 
 const Navbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false); // For hamburger menu
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
-    setIsLoggedIn(!!token); // Set true if token exists, otherwise false
+    setIsLoggedIn(!!token);
   }, []);
 
   const handleLogout = () => {
@@ -23,7 +23,7 @@ const Navbar = () => {
 
   return (
     <div className="nav-component">
-      <nav className="nav h-[62px] bg-[#ACABA4] flex items-center justify-between px-4 sm:px-6 md:px-8">
+      <nav className="nav h-[62px] bg-[#ACABA4] flex items-center justify-between pl-4 sm:pl-6 md:pl-8">
         {/* Logo and Name */}
         <div className="flex items-center space-x-2 md:space-x-4">
           <Link href="/">
@@ -49,7 +49,7 @@ const Navbar = () => {
         </button>
 
         {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center space-x-6">
+        <div className="hidden md:flex items-center space-x-4">
           <Link href="/sell">
             <button className="bg-[#d80032] rounded-md px-4 py-2 text-sm hover:bg-[#d8003281] text-[#F1FBFB]">
               Sell
@@ -69,23 +69,22 @@ const Navbar = () => {
               Logout
             </button>
           )}
-          <Link href="/cart">
+          <Link href="/cart" className=''>
             <Image
               src="/assests/cart.svg"
               width={32}
               height={32}
               alt="cart"
-              className="cursor-pointer"
+              className="m-2 cursor-pointer rounded-md hover:bg-[#9d9b9b]"
             />
           </Link>
-          <Link href="/notification">
+          <Link href="/buyedBooks">
             <Image
-              src="/assests/notification.svg"
+              src="/assests/book.svg"
               width={32}
               height={32}
-              alt="notification"
-              className="cursor-pointer"
-            />
+              alt="book"
+              className="m-2 cursor-pointer rounded-md hover:bg-[#9d9b9b]" />
           </Link>
         </div>
       </nav>
@@ -136,13 +135,14 @@ const Navbar = () => {
               </Link>
             </li>
             <li>
-              <Link href="/notification">
-                <div className="flex items-center space-x-2 p-2 rounded-md hover:bg-[#9d9b9b] text-[#333] hover:text-[#555]">
-                  <Image src="/assests/notification.svg" width={20} height={20} alt="notification" />
-                  <span>Notifications</span>
+              <Link href="/buyedBooks">
+                <div className="flex items-center space-x-2 p-3 rounded-md hover:bg-[#9d9b9b] text-[#333] hover:text-[#555]">
+                  <Image src="/assests/book.svg" width={20} height={20} alt="book" />
+                  <span>books</span>
                 </div>
               </Link>
             </li>
+
           </ul>
         </div>
       )}

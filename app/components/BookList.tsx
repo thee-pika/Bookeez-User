@@ -109,35 +109,32 @@ const BookList = ({ filters, searchQuery }: BookListProps) => {
 
   });
 
-
   return (
-    <div className="container ml-auto px-4 py-8 max-w-[79vw] max-h-[70vh] overflow-y-auto">
+    <div className="container ml-auto px-4 py-8 max-w-[79vw] min-h-full h-full flex flex-col justify-between overflow-y-auto">
       {/* Responsive Grid for Images */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-12">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {filteredBooks.length > 0 ? (
           filteredBooks.map((book) => (
             <Link href={`/book/${book._id}`} key={book._id} className="group">
-              {/* Centered Image Container */}
-              <div className="relative w-full h-64 flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden group-hover:scale-105 transition-transform duration-300">
-                {book.defaultValues.imageUrl ? (
-                  <Image
-                    src={book.defaultValues.imageUrl}
-                    alt={book.defaultValues.title}
-                    fill
-                    priority
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    style={{ objectFit: "cover" }}
-                    className="rounded-lg"
-                  />
-                ) : (
-                  <div className="flex justify-center items-center w-full h-full bg-gray-200">
-                    <span className="text-gray-500">No Image</span>
-                  </div>
-                )}
+              <div
+                key={book._id}
+                className="m-4 shadow-sm rounded-md overflow-hidden"
+              >
+                <div className="w-[200px] h-[290px] relative overflow-hidden">
+               
+                    <Image
+                      src={book.defaultValues.imageUrl}
+                      alt=""
+                      layout="fill"
+                      objectFit="cover"
+                      className=" transition-transform duration-300 hover:scale-110"
+                    />
+       
+                </div>
               </div>
             </Link>
           ))
-          
+
         ) : (
           <p>No books available.</p>
         )}

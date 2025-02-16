@@ -1,8 +1,11 @@
 "use client"
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import dotenv from 'dotenv';
-
+import Loader from '../components/Loader';
+import EmptyCart from '../components/EmptyCart';
+import { useRouter } from 'next/navigation';
+dotenv.config();
 interface cartItem {
   template: {
     defaultValues: {
@@ -18,10 +21,24 @@ interface cartItem {
   addedAt: Date,
   quantity: number
 }
+
+
 const CartItems = () => {
-   dotenv.config();
-   const [loading, setloading] = useState(true)
+  const router = useRouter();
+  const [loading, setloading] = useState(true)
   const [cartItems, setcartItems] = useState<cartItem[]>([])
+  const tokenRef = useRef<string>("");
+
+  useEffect(() => {
+    const newToken = localStorage.getItem('authToken');
+
+    if (newToken) {
+      tokenRef.current = newToken
+    } else {
+      return router.push("/auth/login");
+    }
+
+  }, []);
 
   useEffect(() => {
     fetchCartItems()
@@ -32,42 +49,49 @@ const CartItems = () => {
       const userDetails = localStorage.getItem("user");
       if (userDetails != null) {
         const user = JSON.parse(userDetails);
-  
+
         if (user) {
           const userId = user._id
-  
+
           const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URI}/api/user/cart?userId=${userId}`)
           if (res.ok) {
             const data = await res.json();
-         
+
             const sortedCartItems = data.cart.sort((a: cartItem, b: cartItem) => new Date(b.addedAt).getTime() - new Date(a.addedAt).getTime());
             console.log("sortedCartItems", sortedCartItems)
-  
+
             setcartItems(sortedCartItems);
             console.log("cartItems", cartItems)
           }
         }
       }
     } catch (error) {
-      console.log("error",error );
-      
+      console.log("error", error);
+
     } finally {
       setloading(false)
     }
   }
-  if(loading) {
-    return <div className="h-screen">Loading ....</div>
+  if (loading) {
+    return <div className=" justify-center items-center flex">
+      <Loader />
+    </div>
   }
+  
   const handleDeleteCartItem = async (itemId: string) => {
     const userDetails = localStorage.getItem("user");
     if (userDetails != null) {
       const user = JSON.parse(userDetails);
       if (user) {
         const userId = user._id;
-        
+
         // API call to delete the cart item
         const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URI}/api/user/cart?userId=${userId}&itemId=${itemId}`, {
           method: 'DELETE',
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${tokenRef.current}`
+        },
         });
 
         if (res.ok) {
@@ -79,11 +103,12 @@ const CartItems = () => {
       }
     }
   }
+
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-4 h-full ">
       <div className="grid gap-4">
         {cartItems.length === 0 ? (
-          <p>Your cart is empty.</p>
+          <EmptyCart />
         ) : (
           cartItems.map((item) => (
             <div key={item._id} className="flex  p-4 border-b w-[60vw] mx-auto">

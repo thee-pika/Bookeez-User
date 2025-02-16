@@ -6,13 +6,13 @@ import { useState } from "react";
 import { useRouter } from 'next/navigation';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+dotenv.config();
 
 const Login = () => {
   const router = useRouter();
-  dotenv.config();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  
+
   const handleSubmit = async (e: React.FormEvent<EventTarget>) => {
     e.preventDefault();
     const loginData = { email, password };
@@ -21,7 +21,7 @@ const Login = () => {
       const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URI}/auth/login`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(loginData),
       });
@@ -32,10 +32,10 @@ const Login = () => {
         localStorage.setItem('user', JSON.stringify(data.user));
         localStorage.setItem('authToken', data.token);
         localStorage.setItem('refreshToken', data.refreshToken);
-        
+
         toast.success("Logged In successfully!");
 
-        router.push("/"); 
+        router.push("/");
       } else {
         toast.error("Failed to login!");
 

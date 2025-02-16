@@ -32,7 +32,7 @@ const Home = () => {
   return (
     <div className="main flex">
       <Sidebar onFilterChange={handleFilterChange} />
-      <div className="flex-grow flex-col max-h-[77.5vh]">
+      <div className="flex-grow flex-col min-h-[77.55vh] max-h-[77.55vh]">
         <SearchBar onSearch={handleSearch} />
         <BookList filters={filters} searchQuery={searchQuery} />
       </div>

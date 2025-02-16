@@ -1,13 +1,20 @@
 
 "use client"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Dropdown from ".././../components/Dropdown"
 import { MdUpload } from 'react-icons/md';
 import dotenv from 'dotenv';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useParams } from "next/navigation";
-
+import { useRouter } from "next/navigation";
+import Loader from "@/app/components/Loader";
+dotenv.config();
+interface SellerDetails {
+    name: string,
+    email: string,
+    address: string
+}
 interface Template {
     template_name: string,
     _id: string,
@@ -22,17 +29,74 @@ interface Template {
         semester: string,
         condition: string,
         imageUrl: string,
-    }
+    },
+    sellerDetails: SellerDetails
+}
+
+interface SellerDetails {
+    name: string,
+    email: string,
+    address: string
 }
 
 const NewBook = () => {
-    dotenv.config();
-    const [, setTemplate] = useState<Template | undefined>()
+    const router = useRouter();
+    const [, setTemplate] = useState<Template | null>(null);
     const [loading, setLoading] = useState(true)
     const { id } = useParams()
+    const tokenRef = useRef<string>("");
+
+    useEffect(() => {
+        const newToken = localStorage.getItem('authToken');
+
+        if (newToken) {
+            tokenRef.current = newToken
+        } else {
+            return router.push("/auth/login");
+        }
+
+    }, [router]);
 
     useEffect(() => {
         if (id) {
+            
+            const fetchTemplate = async () => {
+                try {
+                    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URI}/api/template/${id}`)
+                    if (!res.ok) {
+                        console.log("eeror");
+                    }
+                    const { template } = await res.json();
+        
+                    if (!template.defaultValues.imageUrl) {
+                        console.log("Image not found!!!");
+                    }
+        
+                    if (template) {
+                        console.log(template)
+                        setTemplate(template)
+                        SetFormData({
+                            title: template.defaultValues.title,
+                            author: template.defaultValues.author,
+                            price: template.defaultValues.price.toString(),
+                            description: template.defaultValues.description,
+                            isbn: template.defaultValues.isbn,
+                            stream: template.defaultValues.stream,
+                            subject: template.defaultValues.subject,
+                            semester: template.defaultValues.semester,
+                            condition: template.defaultValues.condition,
+                            imageUrl: template.defaultValues.imageUrl || "",
+        
+                        });
+                        setTemplateName(template.template_name);
+                    }
+                } catch (error) {
+                    console.log("eror!!", error)
+                } finally {
+                    setLoading(false)
+                }
+        
+            }
             fetchTemplate()
         }
     }, [id])
@@ -48,10 +112,13 @@ const NewBook = () => {
         semester: "",
         condition: "",
         imageUrl: "",
+
     })
 
     const [imageFile, setImageFile] = useState<File | null>(null);
-    const [template_name, setTemplateName] = useState<string>("")
+    const [template_name, setTemplateName] = useState<string>("");
+    const [sellerDetails, setsellerDetails] = useState<SellerDetails | null>(null);
+
     const courseOptions = [
         "Engineering ",
         "Arts",
@@ -74,80 +141,45 @@ const NewBook = () => {
     ];
     const semsterOptions = ['Semester 1', ' Semester 2', ' Semester 3', 'Semester 4', 'Semester 5', 'Semester 6', 'Semester7', 'Semester8']
 
-    const fetchTemplate = async () => {
-        try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URI}/api/template/${id}`)
-            if (!res.ok) {
-                console.log("eeror");
-            }
-            const { template } = await res.json();
 
-
-            if (!template.defaultValues.imageUrl) {
-                console.log("Image not found!!!");
-            }
-            if (template) {
-                console.log(template)
-                setTemplate(template)
-                SetFormData({
-                    title: template.defaultValues.title,
-                    author: template.defaultValues.author,
-                    price: template.defaultValues.price.toString(),
-                    description: template.defaultValues.description,
-                    isbn: template.defaultValues.isbn,
-                    stream: template.defaultValues.stream,
-                    subject: template.defaultValues.subject,
-                    semester: template.defaultValues.semester,
-                    condition: template.defaultValues.condition,
-                    imageUrl: template.defaultValues.imageUrl || ""
-                });
-                setTemplateName(template.template_name);
-
-            }
-        } catch (error) {
-            console.log("eror!!", error)
-        } finally {
-            setLoading(false)
-        }
-
-    }
     if (loading) {
-        return <div className="h-screen justify-center items-center flex">
-            loafing....
+        return <div className="justify-center items-center flex">
+            <Loader />
         </div>
     }
+
     const handleSubmit = async (e: React.FormEvent<EventTarget>) => {
         e.preventDefault()
         let imageUrl = formData.imageUrl
-        console.log("form submit clciked");
+
         if (imageFile) {
             imageUrl = await uploadImageToCloudinary();
         }
-     
-        const defaultValues = { ...formData, imageUrl };
 
+        const defaultValues = { ...formData, imageUrl, sellerDetails };
+        console.log("defaulttttttttttttttttttttttttttttttttttttttt", defaultValues);
         try {
             console.log(defaultValues)
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URI}/api/template/${id}/addBook`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URI}/api/template/${id}/book`, {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${tokenRef.current}`
                 },
                 body: JSON.stringify(defaultValues),
             })
 
             if (res.ok) {
                 toast.success("Template added successfully!!");
-            
+                await res.json();
+                setTimeout(() => {
+                    router.push("/");
+                }, 1000);
             }
         } catch (error) {
             toast.error("Error adding book. Please try again.");
             console.log('Error:', error);
         }
-    }
-
-    const handlebuttonSubmit = () => {
-        console.log("clciked");
     }
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -174,6 +206,10 @@ const NewBook = () => {
         try {
             const response = await fetch("https://api.cloudinary.com/v1_1/dwkh9z2rg/image/upload", {
                 method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${tokenRef.current}`
+                },
                 body: formData,
             });
 
@@ -185,7 +221,10 @@ const NewBook = () => {
         }
     };
 
-    // const previewUrl = coverImage ? URL.createObjectURL(coverImage) : '';
+    const handleSellerDetailsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setsellerDetails({ ...sellerDetails!, [name]: value })
+    }
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -390,9 +429,54 @@ const NewBook = () => {
                                 />
                             </div>
                         </div>
+                        <div>
+                            <h1 className="font-bold text-xl ml-12 m-6 ">Seller Details</h1>
+                            <div className="flex justify-between w-[70vw]">
+                                <div className="m-4 pl-4">
+                                    <label htmlFor="name" className="mb-4">Name</label>
+                                    <input
+                                        type="text"
+                                        onChange={handleSellerDetailsChange}
+                                        id="name"
+                                        name="name"
+                                        value={sellerDetails?.name}
+                                        className="flex flex-col border border-gray-300 rounded-md mt-4 p-3 w-[30vw] bg-[#ffffff] focus:outline-none focus:ring-2 focus:ring-[#366977] focus:border-[#366977] "
+                                        placeholder="Enter your name"
+                                        required
+                                    />
+                                </div>
+                                <div className="m-4">
+                                    <label htmlFor="email" className="mb-4">Email</label>
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        id="email"
+                                        className="flex flex-col border border-gray-300 rounded-md mt-4 p-3 w-[30vw] bg-[#ffffff] focus:outline-none focus:ring-2 focus:ring-[#366977] focus:border-[#366977] "
+                                        onChange={handleSellerDetailsChange}
+                                        value={sellerDetails?.email}
+                                        placeholder="Enter your email"
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="pl-4">
+                                <label htmlFor="address " className="ml-4 mb-4">Address</label>
+                                <input
+                                    type="text"
+                                    name="address"
+                                    id="address"
+                                    className="flex flex-col border border-gray-300 rounded-md ml-4 mt-4 p-3 w-[50vw] bg-[#ffffff] focus:outline-none focus:ring-2 focus:ring-[#366977] focus:border-[#366977] "
+                                    onChange={handleSellerDetailsChange}
+                                    value={sellerDetails?.address}
+                                    placeholder="Enter your address"
+                                    required
+                                />
+                            </div>
+                        </div>
                         <div className="submit flex justify-center">
                             <button type="submit" className="text-white mt-4 p-4 w-[50%] bg-[#366977] hover:bg-[#153943] focus:outline-none focus:ring-4 focus:ring-[#153943] font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 onCli"
-                                onClick={handlebuttonSubmit}
+
                             >Save</button>
 
                         </div>

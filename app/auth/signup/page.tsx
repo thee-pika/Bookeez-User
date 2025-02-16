@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react";
+import {useState } from "react";
 import dotenv from 'dotenv';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -14,6 +14,7 @@ const Signup = () => {
 
     const router = useRouter();
 
+        
     const handleSubmit = async (e: React.FormEvent<EventTarget>) => {
         e.preventDefault();
 
@@ -25,11 +26,11 @@ const Signup = () => {
         };
 
         try {
-      
+
             const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URI}/auth/register`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
+                    "Content-Type": "application/json"
                 },
                 body: JSON.stringify(newUserData),
             });
@@ -39,7 +40,7 @@ const Signup = () => {
             if (response.ok) {
 
                 toast.success("Account created successfully!");
-                router.push("/auth/signin");
+                router.push("/auth/login");
             } else {
                 console.log("res", response);
                 toast.error("Failed! Some error occurred.");  // Show error toast if registration fails

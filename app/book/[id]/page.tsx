@@ -3,14 +3,16 @@
 import Image from "next/image";
 import dotenv from 'dotenv';
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Link from "next/link";
-import { Rating } from 'react-simple-star-rating'
-// import StarRatingComponent from "react-star-rating-component";
+import StarRatingComponent from 'react-star-rating-component';
 import "../../styles/globals.css"
+import Loader from "@/app/components/Loader";
+dotenv.config();
+
 
 interface Template {
     template_name: string,
@@ -29,46 +31,48 @@ interface Template {
     }
 }
 interface Review {
+    _id: string,
     comment: string,
     rating: number,
     userId: string,
     username: string
 }
 
+interface UserDetails {
+    role: string,
+    _id: string,
+    username: string
+}
 const BookDetails = () => {
     const { id } = useParams();
-    dotenv.config();
     const router = useRouter();
     const [rating, setRating] = useState(0);
     const [comment, setcomment] = useState<string>("");
     const [reviews, setReviews] = useState<Review[]>([]);
     const [template, setTemplate] = useState<Template | undefined>();
-    const [userRole, setUserRole] = useState<string | null>(null);
-
-    const handleRating = (rate: number) => {
-        setRating(rate)
-    }
-
-    // const handleReset = () => {
-    //     // Set the initial value
-    //     setRating(0)
-    // }
+    const [userData, setUserData] = useState<UserDetails | null>(null);
+    const [loading, setloading] = useState<boolean>(true);
+    const tokenRef = useRef<string>("");
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [reviewId, setreviewId] = useState("");
+    const [isEditing, setisEditing] = useState(false);
 
     useEffect(() => {
-        const userDetails = localStorage.getItem("user");
-        if (userDetails) {
-            const user = JSON.parse(userDetails);
-            setUserRole(user.role);  // Set user role (admin or other roles)
+        const newToken = localStorage.getItem('authToken');
+
+        if (newToken) {
+            setIsLoggedIn(true);
+            tokenRef.current = newToken
         }
-        if (id) {
-            fetchTemplate();
-            fetchReviews();
-        }
-    }, [id]);
+
+        setIsLoggedIn(!!newToken);
+    }, []);
 
     const fetchTemplate = async () => {
+
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URI}/api/template/${id}`);
+            console.log("res,", res);
             if (!res.ok) {
                 console.log("Error fetching template");
             }
@@ -79,40 +83,77 @@ const BookDetails = () => {
                 console.log("Image not found!");
             }
         } catch (error) {
-            console.log("Error fetching template:", error);
+            console.log("Error fetching templateeeeeeeee:", error);
+            toast.error("Error Loading!!");
+            setloading(false);
+        } finally {
+            setloading(false);
         }
     };
 
     const fetchReviews = async () => {
         try {
+            console.log("im in fetch review")
             const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URI}/api/template/${id}/review`);
+
             if (!res.ok) {
-                toast.success("Reviews couldn't be fetched successfully");
+                toast.error("Reviews couldn't be fetched successfully");
             }
             const data = await res.json();
+            console.log("dataaaaaaaaaaaaaaaaaaaaaaaaaaaa", data);
             setReviews(data.reviews);
         } catch (error) {
             console.log(error);
+
         }
     };
 
-    // const handleStarClick = (nextValue: number) => {
-    //     setRating((prevRating) => prevRating === nextValue ? prevRating > 0 ? prevRating - 1 : prevRating : nextValue);
-    // };
+    useEffect(() => {
+        const userDetails = localStorage.getItem("user");
+        if (userDetails) {
+            const user = JSON.parse(userDetails);
+            console.log("userrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr,", user);
+            setUserData({ ...userData, role: user.role, _id: user._id, username: user.username });
+        }
+        if (id) {
+            fetchTemplate();
+            fetchReviews();
+        }
+
+    }, [id]);
+
+
+    if (loading) {
+        return <div className="justify-center items-center flex">
+            <Loader />
+        </div>
+    }
+
+    const handleBuy = () => {
+        router.push(`/buyerDetails/${id}`);
+    }
+
+    const handleStarClick = (nextValue: number) => {
+        setRating((prevRating) => prevRating === nextValue ? prevRating > 0 ? prevRating - 1 : prevRating : nextValue);
+    };
 
     const handleDelete = async () => {
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URI}/api/template/${id}`, {
                 method: "DELETE",
                 headers: {
-                    "Content-Type": "application/json"
-                }
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${tokenRef.current}`
+                },
             });
             if (!res.ok) {
                 toast.error("Template Deletion Failed!");
             } else {
                 toast.success("Template Deleted successfully!");
-                router.push("/");
+                setTimeout(() => {
+                    router.push("/");
+                }, 1000)
+
             }
         } catch (error) {
             console.log(error);
@@ -120,12 +161,43 @@ const BookDetails = () => {
         }
     };
 
-    const handleBuy = () => {
-        console.log("Buy clicked");
-    };
+    const handleReviewDelete = async (reviewId: string) => {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URI}/api/template/${id}/review/${reviewId}`, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${tokenRef.current}`
+            },
+        })
+
+        if (res.ok) {
+            toast.success("Template Deleted successfully!");
+            setTimeout(() => {
+                router.push("/");
+            }, 1000)
+        } else {
+            toast.error("Review Deletion Failed!");
+        }
+    }
+
+    const handleEDitReview = async (reviewId: string) => {
+        setisEditing(true);
+
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URI}/api/template/${id}/review/${reviewId}`);
+
+        if (res.ok) {
+            const data = await res.json();
+            console.log("data", data);
+            console.log("commenttttttttttttttttttttt", data.review.comment);
+            console.log("rattttttttttttt", data.review.rating);
+            setreviewId(data.review._id);
+            setcomment(data.review.comment);
+            setRating(data.review.rating);
+        }
+    }
 
     const handleCart = async () => {
-        console.log("Cart clicked");
+
         try {
             const template_Id = id;
             const userDetails = localStorage.getItem("user");
@@ -134,18 +206,21 @@ const BookDetails = () => {
                 const user = JSON.parse(userDetails);
                 if (user) {
                     console.log(user._id);
-
                 }
                 const userId = user._id;
                 const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URI}/api/user/cart`, {
                     method: "POST",
                     headers: {
-                        "Content-Type": "application/json"
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${tokenRef.current}`
                     },
                     body: JSON.stringify({ userId, template_Id })
                 });
                 if (res.ok) {
                     toast.success("Book added to cart successfully!");
+                    setTimeout(() => {
+                        router.push("/cart");
+                    }, 1000);
                 }
             }
         } catch (error) {
@@ -154,23 +229,53 @@ const BookDetails = () => {
         }
     };
 
-    const handleChange: React.ChangeEventHandler<HTMLTextAreaElement> = (e) => {
-        setcomment(e.target.value);
-    };
-
     const handleReviewSubmit: React.ChangeEventHandler<HTMLFormElement> = async (e) => {
         e.preventDefault();
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URI}/api/template/${id}/review`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ rating, comment })
-            });
-            if (res.ok) {
-                toast.success("Review added successfully!");
-                router.refresh();
+            if (!isLoggedIn) {
+                return router.push("/auth/login");
+            }
+
+            if (rating === 0 || comment === "") {
+                toast.error("please enter the values!!");
+            }
+            const username = userData?.username
+            if (isEditing) {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URI}/api/template/${id}/review/${reviewId}`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${tokenRef.current}`
+                    },
+                    body: JSON.stringify({ rating, comment, username })
+                });
+
+                if (res.ok) {
+                    console.log("res,", res);
+                    toast.success("Review edited successfully!");
+
+                    setTimeout(() => {
+                        router.refresh();
+                    }, 1000);
+                }
+            } else {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URI}/api/template/${id}/review`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${tokenRef.current}`
+                    },
+                    body: JSON.stringify({ rating, comment })
+                });
+
+                if (res.ok) {
+                    console.log("res,", res);
+                    toast.success("Review added successfully!");
+
+                    setTimeout(() => {
+                        router.refresh();
+                    }, 1000);
+                }
             }
         } catch (error) {
             console.log(error);
@@ -225,9 +330,9 @@ const BookDetails = () => {
                             aria-label="Buy this template"
                             onClick={handleBuy}
                         >
-                            Buy Now
+                            Buyer Details
                         </button>
-                        {userRole === "admin" && (
+                        {userData?.role === "admin" && (
                             <div className="flex flex-wrap">
                                 <Link href={`/edit-template/${template?._id}`} key={template?._id}>
                                     <button
@@ -255,10 +360,11 @@ const BookDetails = () => {
             <div className="reviews-section flex flex-wrap justify-evenly mt-8">
                 {/* Review Form */}
                 <div className="review w-full md:w-1/3  m-4 mb-8 mt-4 border flex flex-col h-[45vh] items-center border-black rounded-md p-6">
-                    <h1 className="font-bold text-lg hover:underline mb-4">Write a Review ...</h1>
+                    <h1 className="font-bold text-lg hover:underline mb-4">{!isEditing ? "Write a Review ..." : "Edit your Review ..."}</h1>
                     <form onSubmit={handleReviewSubmit} className="w-full">
+
                         <div className="custom-star-rating rating text-2xl ml-4" style={{ fontSize: "2rem" }}>
-                            {/* <StarRatingComponent
+                            <StarRatingComponent
                                 name="rate1"
                                 starColor="#FFD700"
                                 starCount={5}
@@ -266,49 +372,82 @@ const BookDetails = () => {
                                 onStarClick={handleStarClick}
                                 emptyStarColor="#d3d3d3"
                                 editing={true}
-                            /> */}
-
-                            <Rating onClick={handleRating} initialValue={rating} />
+                            />
                         </div>
                         <div className="comment">
                             <textarea
-                                id="description"
-                                name="description"
+                                id="comment"
+                                name="comment"
                                 value={comment}
-                                onChange={handleChange}
+                                onChange={(e) => setcomment(e.target.value)}
                                 rows={3}
                                 cols={40}
-                                placeholder="Enter the description of the book"
+                                placeholder="Enter the comment"
                                 className="w-full border border-gray-300 rounded-md p-3 mt-2 mb-4 bg-white focus:outline-none focus:ring-2 focus:ring-[#366977] focus:border-[#366977]"
+                                required
                             />
                         </div>
                         <button
                             type="submit"
                             className="bg-[#d80032] hover:bg-[rgba(210,4,4,0.64)] text-white py-2 px-4 mb-4 rounded w-full"
                         >
-                            Add Review
+                            {!isEditing ? " Add Review" : "Edit Review "}
                         </button>
                     </form>
                 </div>
 
                 {/* Display Reviews */}
-                <div className="display-reviews w-full m-4  md:w-1/3" key={""}>
+                <div className="display-reviews w-full m-4 md:w-1/3" key={"reviews"}>
                     {reviews.length > 0 ? (
                         reviews.map((review) => (
-                            <div key={review.userId} className="review-item border mb-4 rounded-md border-black p-4">
-                                <div className="flex items-center text-xl">
-                                    {/* <StarRatingComponent
-                                        name={`rating-${review.userId}`}
-                                        starColor="#FFD700"
-                                        starCount={5}
-                                        value={review.rating}
-                                        editing={false}
-                                        emptyStarColor="#d3d3d3"
-                                    /> */}
 
-                                    <Rating onClick={handleRating} initialValue={rating} />
+                            <div key={review._id} className="review-item border mb-4 rounded-md border-black p-4">
+                                <div className="flex justify-between">
+                                    <div className="flex">
+                                        <div className="user-icon mt-2 ">
+                                            <Image src={"/assests/user.svg"} alt={''} width={30} height={30} />
+                                        </div>
+                                        <div className="flex-col ml-4">
+                                            <h1>{review.username ? review.username : "Anonymouse"}</h1>
+                                            <p className="text-gray-600 text-sm">By Bookeez</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex">
+                                        <Image
+                                            src={"/assests/star.svg"}
+                                            alt={""}
+                                            width={24}
+                                            height={24}
+                                        />
+                                        <span className="text-lg mt-2 ml-[2px]">{review.rating ? review.rating : 1} / 5</span>
+                                    </div>
                                 </div>
-                                <p>{review.comment}</p>
+                                <div className="flex justify-between items-end">
+                                    <p>{review.comment}</p>
+                                    <div className="flex items-end text-sm ratings justify-between">
+                                        {
+                                            userData?._id === review.userId ?
+                                                <div className="flex">
+                                                    <span onClick={() => handleEDitReview(review._id)}>
+
+                                                        <Image
+                                                            src={"/assests/edit.svg"} alt={""} width={30} height={30} className="mx-2" />
+
+                                                    </span>
+                                                    <span onClick={() => handleReviewDelete(review._id)}>
+                                                        <Image
+                                                            src={'/assests/delete.svg'}
+                                                            alt={""}
+                                                            width={30}
+                                                            height={30}
+                                                            className="mx-2"
+                                                        />
+                                                    </span>
+                                                </div> : ""
+                                        }
+                                    </div>
+                                </div>
                             </div>
                         ))
                     ) : (

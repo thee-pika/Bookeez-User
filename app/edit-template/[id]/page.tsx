@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Dropdown from ".././../components/Dropdown"
 import { MdUpload } from 'react-icons/md';
 import { ToastContainer, toast } from "react-toastify";
@@ -7,6 +7,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { useParams } from "next/navigation";
 import dotenv from 'dotenv';
 import { useRouter } from "next/navigation";
+dotenv.config();
 
 interface Template {
     template_name: string,
@@ -26,14 +27,62 @@ interface Template {
 }
 
 const EditTemplate = () => {
-    dotenv.config();
     const router = useRouter();
     const [, setTemplate] = useState<Template | undefined>()
     const [loading, setLoading] = useState(true)
     const { id } = useParams()
+    const tokenRef = useRef<string>("");
+    
+    useEffect(() => {
+        const newToken = localStorage.getItem('authToken');
+
+        if (newToken) {
+            tokenRef.current = newToken
+        } else {
+            return router.push("/auth/login");
+        }
+
+    }, [router]);
 
     useEffect(() => {
         if (id) {
+            const fetchTemplate = async () => {
+                try {
+                    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URI}/api/template/${id}`)
+                    if (!res.ok) {
+                        console.log("eeror");
+                    }
+                    const { template } = await res.json();
+        
+                    if (!template.defaultValues.imageUrl) {
+                        console.log("Image not found!!!");
+                    }
+                    if (template) {
+                        console.log(template)
+                        setTemplate(template)
+                        SetFormData({
+                            title: template.defaultValues.title,
+                            author: template.defaultValues.author,
+                            price: template.defaultValues.price.toString(),
+                            description: template.defaultValues.description,
+                            isbn: template.defaultValues.isbn,
+                            stream: template.defaultValues.stream,
+                            subject: template.defaultValues.subject,
+                            semester: template.defaultValues.semester,
+                            condition: template.defaultValues.condition,
+                            imageUrl: template.defaultValues.imageUrl || ""
+                        });
+                        setTemplateName(template.template_name);
+        
+                    }
+                } catch (error) {
+                    console.log("eror!!", error)
+                } finally {
+                    setLoading(false)
+                }
+        
+            }
+
             fetchTemplate()
         }
     }, [id])
@@ -75,43 +124,6 @@ const EditTemplate = () => {
     ];
     const semsterOptions = ['Semester 1', ' Semester 2', ' Semester 3', 'Semester 4', 'Semester 5', 'Semester 6', 'Semester7', 'Semester8']
 
-    const fetchTemplate = async () => {
-        try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URI}/api/template/${id}`)
-            if (!res.ok) {
-                console.log("eeror");
-            }
-            const { template } = await res.json();
-
-
-            if (!template.defaultValues.imageUrl) {
-                console.log("Image not found!!!");
-            }
-            if (template) {
-                console.log(template)
-                setTemplate(template)
-                SetFormData({
-                    title: template.defaultValues.title,
-                    author: template.defaultValues.author,
-                    price: template.defaultValues.price.toString(),
-                    description: template.defaultValues.description,
-                    isbn: template.defaultValues.isbn,
-                    stream: template.defaultValues.stream,
-                    subject: template.defaultValues.subject,
-                    semester: template.defaultValues.semester,
-                    condition: template.defaultValues.condition,
-                    imageUrl: template.defaultValues.imageUrl || ""
-                });
-                setTemplateName(template.template_name);
-
-            }
-        } catch (error) {
-            console.log("eror!!", error)
-        } finally {
-            setLoading(false)
-        }
-
-    }
     if (loading) {
         return <div className="h-screen justify-center items-center flex">
             loafing....
@@ -132,7 +144,8 @@ const EditTemplate = () => {
             const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URI}/api/template/${id}`, {
                 method: "PUT",
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${tokenRef.current}`
                 },
                 body: JSON.stringify({
                     template_name,
@@ -178,6 +191,10 @@ const EditTemplate = () => {
         try {
             const response = await fetch("https://api.cloudinary.com/v1_1/dwkh9z2rg/image/upload", {
                 method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${tokenRef.current}`
+                  },
                 body: formData,
             });
 
@@ -188,8 +205,6 @@ const EditTemplate = () => {
             return null;
         }
     };
-
-    // const previewUrl = coverImage ? URL.createObjectURL(coverImage) : '';
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
