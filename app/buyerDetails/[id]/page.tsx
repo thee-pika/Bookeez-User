@@ -7,7 +7,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import RenderRazorpay from "@/app/components/renderRazorpay";
 import { useRouter } from "next/navigation";
-import EditSelletDetails from "@/app/edit-seller/[id]/page";
+import EditSelletDetails from "@/app/components/EditSellerDetails";
 
 interface sellerDetails {
     _id: string;

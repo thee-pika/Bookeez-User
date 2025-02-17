@@ -1,5 +1,5 @@
 "use client";
-// import { useParams } from "next/navigation";
+
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Loader from "@/app/components/Loader";
@@ -12,8 +12,29 @@ interface Details {
   address: string
 }
 
-const EditSelletDetails = ({ details }: { details: Details }) => {
-  // const { id } = useParams();
+// interface EditSellerDetailsProps {
+//     details: {
+//         templateId: string;
+//         bookId: string;
+//         name: string;
+//         email: string;
+//         address: string;
+//     };
+// }
+
+// interface PageProps {
+//     details: {
+//       templateId: string;
+//       bookId: string;
+//       name: string;
+//       email: string;
+//       address: string;
+//     };
+//   }s
+  
+//   // Step 2: Define EditSellerDetailsProps (directly extending PageProps)
+//   type EditSellerDetailsProps = PageProps;
+const EditSelletDetails = ({ details }: {details: Details}) => {
   const router = useRouter();
   const [open, setOpen] = useState(true);
   const tokenRef = useRef<string>("");
@@ -164,7 +185,6 @@ const EditSelletDetails = ({ details }: { details: Details }) => {
                   value={formData.address}
                   onChange={handleChange}
                   className="w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-
                 />
               </div>
               <div className="flex justify-between">
@@ -189,5 +209,24 @@ const EditSelletDetails = ({ details }: { details: Details }) => {
     </div>
   );
 };
+
+// const checkFields = <T extends PageProps>(props: T) => {
+//     // Logic for checking fields can go here, for example, validating props
+//     console.log("Validating fields for:", props);
+//   };
+  
+//   // Example usage of checkFields
+//   // Now, explicitly pass the correct type (PageProps) when calling checkFields
+//   const exampleProps: PageProps = {
+//     details: {
+//       templateId: '123',
+//       bookId: '456',
+//       name: 'John Doe',
+//       email: 'johndoe@example.com',
+//       address: '123 Main St'
+//     }
+//   };
+  
+//   checkFields(exampleProps); 
 
 export default EditSelletDetails;
