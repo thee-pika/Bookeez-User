@@ -398,7 +398,7 @@ const BookDetails = () => {
 
                 {/* Display Reviews */}
                 <div className="display-reviews w-full m-4 md:w-1/3" key={"reviews"}>
-                    {reviews.length > 0 ? (
+                    {reviews && reviews.length > 0 ? (
                         reviews.map((review) => (
 
                             <div key={review._id} className="review-item border mb-4 rounded-md border-black p-4">

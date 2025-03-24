@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   description: "A platform to buy and sell Books",
 };
 
-// className={`antialiased`}
+// className={`antialiased`}[77.9vh]
 
 export default function RootLayout({
   children,
@@ -19,7 +19,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`antialiased `}>
         <Navbar/>     
-        <div className=" min-h-[77.9vh]">{children}</div>        
+        <div className=" min-h-[83.4vh]">{children}</div>        
         <Footer/>
       </body>
     </html>

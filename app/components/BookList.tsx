@@ -143,7 +143,7 @@ const BookList = ({ filters, searchQuery }: BookListProps) => {
       {/* Pagination Controls */}
       <div className="pagination flex justify-end items-center mt-8">
         <button
-          className="bg-[#366977] hover:bg-[#153943] text-white py-2 px-6 rounded-md disabled:opacity-50"
+          className="bg-[#366977] hover:bg-[#153943] text-white py-2 px-6 rounded-md mb-4 disabled:opacity-50"
           onClick={handlePrevious}
           disabled={currentPage === 1}
         >

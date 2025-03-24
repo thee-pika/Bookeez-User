@@ -1,9 +1,8 @@
-"use client"
+"use client";
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import Loader from "../components/Loader";
 
 interface sellerDetails {
@@ -13,7 +12,7 @@ interface sellerDetails {
 }
 
 interface Book {
-  _id: string,
+  _id: string;
   title: string;
   author: string;
   price: number;
@@ -34,48 +33,50 @@ const BuyedBooks = () => {
   const [loading, setloading] = useState<boolean>(true);
 
   useEffect(() => {
-    const newToken = localStorage.getItem('authToken');
+    const newToken = localStorage.getItem("authToken");
 
     if (!newToken) {
       return router.push("/auth/login");
     }
-    tokenRef.current = newToken
-
+    tokenRef.current = newToken;
   }, []);
 
   useEffect(() => {
     const getBuyedBooks = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URI}/auth/books`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${tokenRef.current}`
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URI}/auth/books`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${tokenRef.current}`,
+            },
           }
-        });
+        );
         console.log("res", res);
         if (!res.ok) {
-  
         }
         const data = await res.json();
-  
+
         setbuyedBooks(data.books);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (error) {
         setloading(false);
       } finally {
         setloading(false);
       }
-    }
+    };
     getBuyedBooks();
-  }, [])
+  }, []);
 
-  
   if (loading) {
-    return <div className="justify-center items-center flex">
+    return (
+      <div className="justify-center items-center flex">
         <Loader />
-    </div>
-}
+      </div>
+    );
+  }
 
   return (
     <>
@@ -85,33 +86,28 @@ const BuyedBooks = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           {buyedBooks && buyedBooks.length > 0 ? (
             buyedBooks.map((book) => (
-              <Link href={`/book/${book._id}`} key={book._id} className="group">
-                <div
-                  key={book._id}
-                  className="m-4 shadow-sm rounded-md overflow-hidden flex justify-center"
-                >
-                  <div className="w-[200px] h-[290px] relative overflow-hidden">
-
-                    <Image
-                      src={book.imageUrl}
-                      alt=""
-                      layout="fill"
-                      objectFit="cover"
-                      className=" transition-transform duration-300 hover:scale-110"
-                    />
-                  </div>
+              <div
+                key={book._id}
+                className="m-4 shadow-sm rounded-md overflow-hidden flex justify-center"
+              >
+                <div className="w-[200px] h-[290px] relative overflow-hidden cursor-pointer">
+                  <Image
+                    src={book.imageUrl}
+                    alt=""
+                    layout="fill"
+                    objectFit="cover"
+                    className=" transition-transform duration-300 hover:scale-110"
+                  />
                 </div>
-              </Link>
+              </div>
             ))
-
           ) : (
             <p>No books available.</p>
           )}
         </div>
       </div>
-
     </>
-  )
-}
+  );
+};
 
-export default BuyedBooks
+export default BuyedBooks;
