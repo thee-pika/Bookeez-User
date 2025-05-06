@@ -168,14 +168,14 @@ const EditTemplate = () => {
     }
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        // Access the selected file
-        const file = e.target.files?.[0]; // Use optional chaining to avoid null errors
+       
+        const file = e.target.files?.[0]; 
 
         if (file) {
 
             setImageFile(file);
-            // Optional: Set the file name or other placeholder in `formData`
-            SetFormData({ ...formData, imageUrl: file.name }); // This is just for display
+         
+            SetFormData({ ...formData, imageUrl: file.name }); 
         }
     };
 
@@ -215,7 +215,7 @@ const EditTemplate = () => {
 
         SetFormData((prevState) => ({
             ...prevState,
-            [field]: selectedOption, // Dynamically update the field in the formData state
+            [field]: selectedOption, 
         }));
 
     };
@@ -374,7 +374,7 @@ const EditTemplate = () => {
                                     e.preventDefault();
                                     const file = e.dataTransfer.files[0];
                                     if (file) {
-                                        // setCoverImage(file);
+                                  
                                         SetFormData({ ...formData, imageUrl: file.name })
                                     }
                                 }}

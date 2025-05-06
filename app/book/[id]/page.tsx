@@ -43,6 +43,7 @@ interface UserDetails {
     _id: string,
     username: string
 }
+
 const BookDetails = () => {
     const { id } = useParams();
     const router = useRouter();
@@ -72,7 +73,7 @@ const BookDetails = () => {
 
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URI}/api/template/${id}`);
-            console.log("res,", res);
+           
             if (!res.ok) {
                 console.log("Error fetching template");
             }

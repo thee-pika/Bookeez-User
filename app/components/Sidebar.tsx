@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { FaBars, FaTimes } from 'react-icons/fa'; // For the hamburger and close icon
+import { FaBars, FaTimes } from 'react-icons/fa';
 
 interface Filters {
     streams: string[];
@@ -10,11 +10,11 @@ interface Filters {
 }
 
 interface SidebarProps {
-    onFilterChange: (newFilters: Filters) => void; // Accepting the onFilterChange prop
+    onFilterChange: (newFilters: Filters) => void; 
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ onFilterChange }) => {
-    const [isModalOpen, setIsModalOpen] = useState<boolean>(false); // Modal state (card open/close)
+    const [isModalOpen, setIsModalOpen] = useState<boolean>(false); 
     const [selectedFilters, setSelectedFilters] = useState<Filters>({
         streams: [],
         semesters: [],
